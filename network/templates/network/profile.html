@@ -1,0 +1,76 @@
+{% extends "network/layout.html" %}
+{% load static %}
+
+{% block title %}
+    {{ user_profile.username }} - Profile
+{% endblock %}
+    
+{% block body %}
+    <div class="container mt-4">
+        <h3 id="username">{{ user_profile.username }}</h3>
+        <p>Followers: {{ followers_count }}</p>
+        <p>Following: {{ following_count }}</p>
+
+        {% if request.user != user_profile and user.is_authenticated %}
+            {% if request.user in user_profile.followers.all %}
+                <button id="unfollow-button" class="btn btn-danger">Unfollow</button>
+            {% else %}
+                <button id="follow-button" class="btn btn-primary">Follow</button>
+            {% endif %}
+        {% endif %}
+
+        <hr>
+
+        {% for post in posts %}
+            <div class="card mb-3" data-post-id="{{ post.postId }}">
+                <div class="card-body">                    
+                    <p class="card-text">{{ post.text }}</p>
+                    <p class="card-text">
+                        <small class="text-muted">{{ post.timestamp }}</small>
+                    </p>
+                    
+                    {% if user.is_authenticated %}
+                        <div class="card-like">
+                            {% if user in post.likes.all %}
+                                <button id="unlike-button" class="btn btn-link unlike-button">
+                                    <i class="bi bi-heart-fill"></i>
+                                </button>
+                            {% else %}
+                                <button id="like-button" class="btn btn-link like-button">
+                                    <i class="bi bi-heart"></i>
+                                </button>
+                            {% endif %}
+                            <span class="card-likes">{{ post.likes.count }}</span>
+                        </div>
+                    {% endif %}
+                    
+                    {% if user.is_authenticated and request.user == user_profile %}
+                        <button id="edit-button" class="btn btn-primary">Edit</button>
+                        <button id="save-button" class="btn btn-success" style="display: none;">Save</button>
+                    {% endif %}
+                </div>
+            </div>
+        {% empty %}
+            <p>No posts available.</p>
+        {% endfor %}
+
+        {% if page_obj.has_other_pages %}
+        <div class="pagination mt-4">
+            {% if page_obj.has_previous %}
+            <a class="btn btn-primary" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+            {% endif %}
+    
+            <span class="current-page bg-primary text-white px-3 py-2 rounded">{{ page_obj.number }}</span>
+    
+            {% if page_obj.has_next %}
+            <a class="btn btn-primary" href="?page={{ page_obj.next_page_number }}">Next</a>
+            {% endif %}
+        </div>
+        {% endif %}
+        
+    </div>
+{% endblock %}
+
+{% block script %}
+    <script src="{% static 'network/profile.js' %}"></script>
+{% endblock %}
